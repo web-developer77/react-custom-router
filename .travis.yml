@@ -9,6 +9,10 @@ cache:
     - packages/react-router-dom/node_modules
     - packages/react-router-native/node_modules
     - website/node_modules
+env:
+  - REACT_VERSION=16.5
+  - REACT_VERSION=16.4
+  - REACT_VERSION=16.3
 install:
   - npm ci
 before_script:
