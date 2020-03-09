@@ -40,5 +40,11 @@ build a certain capability or feature of your app with React Router.
 - [Using Mocha](#TODO)
 - [Using Cypress](#TODO)
 
+## Migrating
+
+- [Migrating to v6 from v4/5](migrating-5-to-6.md)
+- [Migrating to v6 from @reach/router](migrating-reach-router-to-6.md)
+
 This list is by no means exhaustive, so if you think something is missing,
-please [let us know](#TODO)!
+please [let us
+know](https://github.com/ReactTraining/react-router/issues/new)!
