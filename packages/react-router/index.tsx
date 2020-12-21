@@ -286,26 +286,29 @@ export function useBlocker(blocker: Blocker, when = true): void {
 
   let navigator = React.useContext(LocationContext).navigator as Navigator;
 
-  React.useEffect(() => {
-    if (!when) return;
+  React.useEffect(
+    () => {
+      if (!when) return;
 
-    let unblock = navigator.block((tx: Transition) => {
-      let autoUnblockingTx = {
-        ...tx,
-        retry() {
-          // Automatically unblock the transition so it can play all the way
-          // through before retrying it. TODO: Figure out how to re-enable
-          // this block if the transition is cancelled for some reason.
-          unblock();
-          tx.retry();
-        }
-      };
+      let unblock = navigator.block((tx: Transition) => {
+        let autoUnblockingTx = {
+          ...tx,
+          retry() {
+            // Automatically unblock the transition so it can play all the way
+            // through before retrying it. TODO: Figure out how to re-enable
+            // this block if the transition is cancelled for some reason.
+            unblock();
+            tx.retry();
+          }
+        };
 
-      blocker(autoUnblockingTx);
-    });
+        blocker(autoUnblockingTx);
+      });
 
-    return unblock;
-  }, [navigator, blocker, when]);
+      return unblock;
+    },
+    [navigator, blocker, when]
+  );
 }
 
 /**
@@ -542,19 +545,22 @@ function useRoutes_(
   }
 
   // Otherwise render an element.
-  let element = matches.reduceRight((outlet, { params, pathname, route }) => {
-    return (
-      <RouteContext.Provider
-        children={route.element}
-        value={{
-          outlet,
-          params: readOnly<Params>({ ...parentParams, ...params }),
-          pathname: joinPaths([basename, pathname]),
-          route
-        }}
-      />
-    );
-  }, null as React.ReactElement | null);
+  let element = matches.reduceRight(
+    (outlet, { params, pathname, route }) => {
+      return (
+        <RouteContext.Provider
+          children={route.element}
+          value={{
+            outlet,
+            params: readOnly<Params>({ ...parentParams, ...params }),
+            pathname: joinPaths([basename, pathname]),
+            route
+          }}
+        />
+      );
+    },
+    null as React.ReactElement | null
+  );
 
   return element;
 }
@@ -676,8 +682,9 @@ export function generatePath(path: string, params: Params = {}): string {
       invariant(params[key] != null, `Missing ":${key}" param`);
       return params[key];
     })
-    .replace(/\/*\*$/, _ =>
-      params['*'] == null ? '' : params['*'].replace(/^\/*/, '/')
+    .replace(
+      /\/*\*$/,
+      _ => (params['*'] == null ? '' : params['*'].replace(/^\/*/, '/'))
     );
 }
 
@@ -794,8 +801,8 @@ function computeScore(path: string): number {
         (paramRe.test(segment)
           ? dynamicSegmentValue
           : segment === ''
-          ? emptySegmentValue
-          : staticSegmentValue),
+            ? emptySegmentValue
+            : staticSegmentValue),
       initialScore
     );
 }
@@ -883,10 +890,13 @@ export function matchPath(
 
   let matchedPathname = match[1];
   let values = match.slice(2);
-  let params = paramNames.reduce((memo, paramName, index) => {
-    memo[paramName] = safelyDecodeURIComponent(values[index], paramName);
-    return memo;
-  }, {} as Params);
+  let params = paramNames.reduce(
+    (memo, paramName, index) => {
+      memo[paramName] = safelyDecodeURIComponent(values[index], paramName);
+      return memo;
+    },
+    {} as Params
+  );
 
   return { path, pathname: matchedPathname, params };
 }
