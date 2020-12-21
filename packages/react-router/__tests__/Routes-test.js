@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { create as createTestRenderer } from 'react-test-renderer';
-import { MemoryRouter as Router, Routes, Route } from 'react-router';
+import { MemoryRouter as Router, Routes, Route, Outlet } from 'react-router';
 
 describe('A <Routes>', () => {
   it('renders the first route that matches the URL', () => {
@@ -17,6 +17,42 @@ describe('A <Routes>', () => {
     );
 
     expect(renderer.toJSON()).toMatchSnapshot();
+  });
+
+  it('pathless layout', () => {
+    function Layout() {
+      return (
+        <div>
+          <h1>Layout</h1>
+          <Outlet />
+        </div>
+      );
+    }
+
+    function Home() {
+      return <h1>Home</h1>;
+    }
+
+    let renderer = createTestRenderer(
+      <Router initialEntries={['/']}>
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path="/" element={<Home />} />
+          </Route>
+        </Routes>
+      </Router>
+    );
+
+    expect(renderer.toJSON()).toMatchInlineSnapshot(`
+      <div>
+        <h1>
+          Layout
+        </h1>
+        <h1>
+          Home
+        </h1>
+      </div>
+    `);
   });
 
   it('does not render a 2nd route that also matches the URL', () => {

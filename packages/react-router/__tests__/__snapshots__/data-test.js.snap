@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`data loading initial render uses initialData 1`] = `
+<div>
+  <h1>
+    layout
+  </h1>
+  <h2>
+    home
+  </h2>
+</div>
+`;

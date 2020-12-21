@@ -93,6 +93,7 @@ interface RouteContextObject {
   params: Params;
   pathname: string;
   route: RouteObject | null;
+  data?: any;
 }
 
 if (__DEV__) {
@@ -196,6 +197,7 @@ export interface RouteProps {
   children?: React.ReactNode;
   element?: React.ReactElement | null;
   path?: string;
+  initialData?: any;
 }
 
 /**
@@ -250,6 +252,7 @@ export function Router({
 export interface RoutesProps {
   basename?: string;
   children?: React.ReactNode;
+  initialData?: any;
 }
 
 /**
@@ -269,6 +272,10 @@ export function Routes({
 ///////////////////////////////////////////////////////////////////////////////
 // HOOKS
 ///////////////////////////////////////////////////////////////////////////////
+
+export function useRouteData() {
+  return React.useContext(RouteContext).data;
+}
 
 /**
  * Blocks all navigation attempts. This is useful for preventing the page from
@@ -554,7 +561,8 @@ function useRoutes_(
             outlet,
             params: readOnly<Params>({ ...parentParams, ...params }),
             pathname: joinPaths([basename, pathname]),
-            route
+            route,
+            data: route.initialData
           }}
         />
       );
@@ -624,6 +632,7 @@ export function createRoutesFromChildren(
     let route: RouteObject = {
       path: element.props.path || '/',
       caseSensitive: element.props.caseSensitive === true,
+      initialData: element.props.initialData,
       // Default behavior is to just render the element that was given. This
       // permits people to use any element they prefer, not just <Route> (though
       // all our official examples and docs use <Route> for clarity).
@@ -657,6 +666,7 @@ export interface RouteObject {
   children?: RouteObject[];
   element: React.ReactNode;
   path: string;
+  initialData?: any;
 }
 
 /**
