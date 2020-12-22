@@ -30,7 +30,8 @@ import {
   useOutlet,
   useParams,
   useResolvedPath,
-  useRoutes
+  useRoutes,
+  useRouteData
 } from 'react-router';
 import { State, To } from 'history';
 import URLSearchParams from '@ungap/url-search-params';
@@ -62,7 +63,8 @@ export {
   useOutlet,
   useParams,
   useResolvedPath,
-  useRoutes
+  useRoutes,
+  useRouteData
 };
 
 ////////////////////////////////////////////////////////////////////////////////

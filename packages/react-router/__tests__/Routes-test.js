@@ -19,7 +19,7 @@ describe('A <Routes>', () => {
     expect(renderer.toJSON()).toMatchSnapshot();
   });
 
-  it('pathless layout', () => {
+  it('renders a pathless layout', () => {
     function Layout() {
       return (
         <div>

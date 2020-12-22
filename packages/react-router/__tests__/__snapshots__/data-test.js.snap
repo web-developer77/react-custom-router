@@ -5,8 +5,32 @@ exports[`data loading initial render uses initialData 1`] = `
   <h1>
     layout
   </h1>
+  <button
+    data-testid="navigate"
+    onClick={[Function]}
+  />
   <h2>
     home
   </h2>
+</div>
+`;
+
+exports[`data loading transitioning loads route data 1`] = `
+<div
+  data-testid="root"
+>
+  <div>
+    <h1>
+      layout
+    </h1>
+    <button
+      data-testid="navigate"
+    />
+    <h2
+      data-testid="about"
+    >
+      about
+    </h2>
+  </div>
 </div>
 `;

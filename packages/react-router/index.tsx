@@ -85,7 +85,8 @@ const RouteContext = React.createContext<RouteContextObject>({
   outlet: null,
   params: readOnly<Params>({}),
   pathname: '',
-  route: null
+  route: null,
+  nextLocation: null
 });
 
 interface RouteContextObject {
@@ -94,6 +95,7 @@ interface RouteContextObject {
   pathname: string;
   route: RouteObject | null;
   data?: any;
+  nextLocation: null | Location;
 }
 
 if (__DEV__) {
@@ -198,6 +200,7 @@ export interface RouteProps {
   element?: React.ReactElement | null;
   path?: string;
   initialData?: any;
+  loader?: Loader;
 }
 
 /**
@@ -249,10 +252,15 @@ export function Router({
   );
 }
 
+export interface Loader {
+  (match: RouteMatch): Promise<any> | any;
+}
+
 export interface RoutesProps {
   basename?: string;
   children?: React.ReactNode;
   initialData?: any;
+  // fallback?: React.ReactElement;
 }
 
 /**
@@ -519,6 +527,73 @@ function useRoutes_(
     params: parentParams
   } = React.useContext(RouteContext);
 
+  basename = basename ? joinPaths([parentPathname, basename]) : parentPathname;
+
+  let nextLocation = useLocation() as Location;
+
+  let [state, setState] = React.useState<{
+    location: Location;
+    matches: null | RouteMatch[];
+    routesData: any[]
+  }>(() => {
+    let matches = matchRoutes(routes, nextLocation, basename);
+    return {
+      location: nextLocation,
+      matches,
+      routesData: matches ? matches.map(match => match.route.initialData) : []
+    };
+  });
+
+  // preload sequence
+  React.useEffect(
+    () => {
+      if (nextLocation === state.location) {
+        return;
+      }
+
+      let matches = matchRoutes(routes, nextLocation, basename);
+      if (!matches) {
+        return;
+      }
+
+      // Bail if there are no loaders. TODO: Move this out of the effect so they
+      // only get one render on location changes without loaders.
+      if (matches.every(match => !match.route.loader)) {
+        setState({
+          routesData: [],
+          location: nextLocation,
+          matches
+        })
+        return;
+      }
+
+      // Okay, we're ready to preload stuff
+      Promise.all(
+        matches.map(match => {
+          return match.route.loader?.(match)
+        })
+      ).then((routesData) => {
+        setState({
+          routesData,
+          location: nextLocation,
+          matches
+        })
+      }).catch(error => {
+        // TODO: put in state, rerender, let ErrorBoundaries catch it
+        throw new Error(error)
+      });
+    },
+    // TODO: `routes` identity changes every time in `createRoutesFromChildren`.
+    // Need to figure out how to serialize them into a value to indicate if
+    // they've changed or not. What this means right now is that if an app
+    // changes the routes dynamically, it won't kick off data fetch w/o the
+    // location also changing. Fortunately we don't get useEffect DDoS because
+    // of the location change check at the top of the effect.
+    [nextLocation, state.location, basename, routes]
+  );
+
+  let { location, matches, routesData } = state;
+
   if (__DEV__) {
     // You won't get a warning about 2 different <Routes> under a <Route>
     // without a trailing *, but this is a best-effort warning anyway since we
@@ -537,15 +612,6 @@ function useRoutes_(
     );
   }
 
-  basename = basename ? joinPaths([parentPathname, basename]) : parentPathname;
-
-  let location = useLocation() as Location;
-  let matches = React.useMemo(() => matchRoutes(routes, location, basename), [
-    location,
-    routes,
-    basename
-  ]);
-
   if (!matches) {
     // TODO: Warn about nothing matching, suggest using a catch-all route.
     return null;
@@ -553,7 +619,7 @@ function useRoutes_(
 
   // Otherwise render an element.
   let element = matches.reduceRight(
-    (outlet, { params, pathname, route }) => {
+    (outlet, { params, pathname, route }, index) => {
       return (
         <RouteContext.Provider
           children={route.element}
@@ -561,8 +627,9 @@ function useRoutes_(
             outlet,
             params: readOnly<Params>({ ...parentParams, ...params }),
             pathname: joinPaths([basename, pathname]),
+            nextLocation: nextLocation === location ? null : nextLocation,
             route,
-            data: route.initialData
+            data: routesData[index]
           }}
         />
       );
@@ -633,6 +700,7 @@ export function createRoutesFromChildren(
       path: element.props.path || '/',
       caseSensitive: element.props.caseSensitive === true,
       initialData: element.props.initialData,
+      loader: element.props.loader,
       // Default behavior is to just render the element that was given. This
       // permits people to use any element they prefer, not just <Route> (though
       // all our official examples and docs use <Route> for clarity).
@@ -667,6 +735,7 @@ export interface RouteObject {
   element: React.ReactNode;
   path: string;
   initialData?: any;
+  loader?: Loader;
 }
 
 /**

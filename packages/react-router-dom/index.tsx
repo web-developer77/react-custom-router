@@ -25,6 +25,7 @@ import {
   useParams,
   useResolvedPath,
   useRoutes,
+  useRouteData,
   createRoutesFromArray,
   createRoutesFromChildren,
   generatePath,
@@ -77,7 +78,8 @@ export {
   useOutlet,
   useParams,
   useResolvedPath,
-  useRoutes
+  useRoutes,
+  useRouteData
 };
 
 ////////////////////////////////////////////////////////////////////////////////
